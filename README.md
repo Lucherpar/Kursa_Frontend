@@ -64,3 +64,26 @@ Nuestro repositorio sigue una estructura de ramas en **tres niveles** que garant
 - Una vez la tarea esté **completa y cumpla el DoD**, se realiza el **merge a `develop`** mediante Pull Request.
 
 ### Flujo de Trabajo Paso a Paso
+1. **Crear el Issue** con la descripción de la tarea.
+2. **Crear la rama** desde `develop`: `git checkout -b feature/[nombre-tarea] develop`
+3. **Desarrollar** la tarea en la rama feature.
+4. **Verificar el DoD** (funciona localmente, criterios de aceptación, etc.).
+5. **Abrir una Pull Request** hacia `develop` y solicitar revisión a otro compañero.
+6. **Merge a `develop`** tras la aprobación.
+7. **PR de `develop` a `main`** cuando se cierre una versión estable.
+
+---
+
+## 🧭 Buenas Prácticas
+
+- 🔹 Haz **commits atómicos** con mensajes claros (ej.: `feat: agrega validación de email`).
+- 🔹 Mantén tu rama `feature` **actualizada** con `develop` para evitar conflictos.
+- 🔹 **No subas** código comentado, credenciales ni archivos innecesarios.
+- 🔹 Revisa las PRs de tus compañeros con **feedback constructivo y respetuoso**.
+- 🔹 Ante cualquier duda sobre el flujo, consulta al **Scrum Master** o al **Product Owner**.
+
+---
+
+<p align="center">
+  <sub>Hecho con 💙 por el equipo de <strong>kursa</strong></sub>
+</p>
