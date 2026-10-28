@@ -1,4 +1,4 @@
-# kursa
+# kursa_Frontend
 
 ![Status](https://img.shields.io/badge/status-en%20desarrollo-yellow)
 ![License](https://img.shields.io/badge/license-MIT-blue)
