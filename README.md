@@ -5,6 +5,8 @@
 
 > Proyecto **kursa** — Repositorio oficial del equipo. Este documento define las normas de colaboración, el flujo de trabajo con Git y los criterios de calidad que seguimos todos los integrantes.
 
+🔗 **Repositorio Backend:** [Kursa_Backend](https://github.com/Lucherpar/Kursa_Backend.git)
+
 ---
 
 ## 📑 Tabla de Contenidos
