@@ -1,4 +1,7 @@
 import type { ReactNode } from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../store/AuthContext";
+import type { Role } from "../../store/AuthContext";
 import { cn } from "../../lib/utils";
 
 export const Sidebar = ({ children, className }: { children: ReactNode; className?: string }) => {
@@ -13,6 +16,26 @@ export const Navbar = ({ children, className }: { children: ReactNode; className
   );
 };
 
-export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
+interface ProtectedRouteProps {
+  children: ReactNode;
+  allowedRoles?: Role[];
+}
+
+export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
+  const { user, loading, isAuthenticated } = useAuth();
+  const location = useLocation();
+
+  if (loading) {
+    return <div className="p-8 text-center">Cargando...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/unauthorized" replace />;
+  }
+
   return <>{children}</>;
 };
