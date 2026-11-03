@@ -14,6 +14,10 @@ import GradesPage from "./pages/GradesPage";
 import ProfilePage from "./pages/ProfilePage";
 import VideoCallPage from "./pages/VideoCallPage";
 import RecordingsPage from "./pages/RecordingsPage";
+import AdminPage from "./pages/AdminPage";
+import ProfesorPage from "./pages/ProfesorPage";
+import EstudiantePage from "./pages/EstudiantePage";
+import UnauthorizedPage from "./pages/UnauthorizedPage";
 import { ProtectedRoute } from "./components/layout/layout";
 
 function AppRouter() {
@@ -26,6 +30,31 @@ function AppRouter() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="/unauthorized" element={<UnauthorizedPage />} />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profesor"
+        element={
+          <ProtectedRoute allowedRoles={["profesor"]}>
+            <ProfesorPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/estudiante"
+        element={
+          <ProtectedRoute allowedRoles={["estudiante"]}>
+            <EstudiantePage />
           </ProtectedRoute>
         }
       />
