@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { LessonCard } from "../components/common/common";
+import { getApiList } from "../lib/utils";
 
 export default function SubjectPage() {
   const { subjectId } = useParams();
@@ -11,7 +12,8 @@ export default function SubjectPage() {
       const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000/api"}/subjects/${subjectId}/lessons`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
       });
-      return res.json();
+      const payload = await res.json();
+      return getApiList<any>(payload);
     },
   });
 
