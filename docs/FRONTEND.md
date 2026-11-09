@@ -91,7 +91,8 @@ La sesión se persiste en `localStorage` (`accessToken`, `refreshToken`, `user`)
 
 - `baseURL = VITE_API_URL`.
 - Interceptor de petición: añade `Authorization: Bearer <token>`.
-- Interceptor de respuesta: ante `401`, limpia la sesión y redirige a `/login`.
+- Interceptor de respuesta: ante `401`, intenta renovar el access token con `POST /auth/refresh` (una sola vez, evitando peticiones duplicadas) y reintenta la petición original. Si el refresh falla, limpia la sesión y redirige a `/login`.
+- Al arrancar, `AuthContext` revalida la sesión con `GET /auth/me` cuando existe un token guardado.
 
 ## 7. Añadir una página nueva
 

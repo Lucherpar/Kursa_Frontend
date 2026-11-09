@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { getApiList } from "../lib/utils";
 
 export default function RecordingsPage() {
   const { subjectId } = useParams();
@@ -10,7 +11,8 @@ export default function RecordingsPage() {
       const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000/api"}/subjects/${subjectId}/recordings`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
       });
-      return res.json();
+      const payload = await res.json();
+      return getApiList<any>(payload);
     },
   });
 

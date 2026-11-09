@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { TextContent, ImageGallery, VideoPlayer } from "../components/content/content";
+import { getApiData } from "../lib/utils";
 
 export default function LessonPage() {
   const { lessonId } = useParams();
@@ -11,7 +12,8 @@ export default function LessonPage() {
       const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000/api"}/lessons/${lessonId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
       });
-      return res.json();
+      const payload = await res.json();
+      return getApiData<any>(payload);
     },
   });
 

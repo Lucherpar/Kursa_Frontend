@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { api } from "../lib/api";
 
 export type Role = "admin" | "profesor" | "estudiante";
 
@@ -19,19 +20,64 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const clearStoredSession = () => {
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("user");
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     const storedToken = localStorage.getItem("accessToken");
     const storedUser = localStorage.getItem("user");
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+
+    const init = async () => {
+      if (!storedToken) {
+        if (!cancelled) setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await api.get("/auth/me");
+        const me = response.data?.data ?? response.data;
+        if (cancelled) return;
+        const currentToken = localStorage.getItem("accessToken") || storedToken;
+        setToken(currentToken);
+        setUser(me as User);
+        localStorage.setItem("user", JSON.stringify(me));
+      } catch {
+        if (cancelled) return;
+        clearStoredSession();
+        setToken(null);
+        setUser(null);
+        if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    // Avoid blocking render when there is no token.
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+        setToken(storedToken);
+      } catch {
+        clearStoredSession();
+      }
     }
-    setLoading(false);
+
+    void init();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const login = (accessToken: string, refreshToken: string, user: User) => {
@@ -43,16 +89,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("user");
+    const currentToken = localStorage.getItem("accessToken");
+    if (currentToken) {
+      // Best-effort backend notification; do not block local cleanup.
+      api.post("/auth/logout").catch(() => undefined);
+    }
+    clearStoredSession();
     setToken(null);
     setUser(null);
-    window.location.href = "/login";
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout, isAuthenticated: !!token }}>
+    <AuthContext.Provider value={{ user, token, loading, login, logout, isAuthenticated: !!token && !!user }}>
       {children}
     </AuthContext.Provider>
   );

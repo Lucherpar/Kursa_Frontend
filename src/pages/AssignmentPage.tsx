@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DropzoneZone } from "../components/common/common";
+import { getApiData } from "../lib/utils";
 
 export default function AssignmentPage() {
   const { assignmentId } = useParams();
@@ -12,7 +13,8 @@ export default function AssignmentPage() {
       const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000/api"}/assignments/${assignmentId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
       });
-      return res.json();
+      const payload = await res.json();
+      return getApiData<any>(payload);
     },
   });
 

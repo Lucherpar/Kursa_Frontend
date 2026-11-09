@@ -1,43 +1,116 @@
-import { useAuth } from "../store/AuthContext";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
+
+import { useAuth } from "../store/AuthContext";
+import { useLogin } from "../hooks/useAuthForms";
+import { api } from "../lib/api";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+
+type LoginFormData = {
+  email: string;
+  password: string;
+};
+
+const getErrorMessage = (error: unknown): string | undefined => {
+  if (typeof error === "object" && error !== null && "response" in error) {
+    const response = (error as { response?: { data?: { message?: string } } }).response;
+    return response?.data?.message;
+  }
+  return undefined;
+};
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { schema, defaultValues } = useLogin();
+  const [serverError, setServerError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(schema),
+    defaultValues,
+  });
 
-    login("dummy-token", "dummy-refresh", { id: 1, email, role: "estudiante" });
-    navigate("/");
+  const onSubmit = async (data: LoginFormData) => {
+    setServerError(null);
+    try {
+      const response = await api.post("/auth/login", data);
+      const payload = response.data?.data as {
+        user: { id: number; email: string; role: "admin" | "profesor" | "estudiante" };
+        accessToken: string;
+        refreshToken: string;
+      };
+
+      login(payload.accessToken, payload.refreshToken, payload.user);
+      navigate("/dashboard", { replace: true });
+    } catch (error: unknown) {
+      setServerError(getErrorMessage(error) ?? "No se pudo iniciar sesión. Revisa tus credenciales.");
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="w-full max-w-md space-y-6 p-8 border border-border rounded-xl bg-card">
-        <h2 className="text-2xl font-bold">Iniciar sesión</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium">Correo electrónico</label>
-            <input type="email" name="email" required className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-primary" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">Contraseña</label>
-            <input type="password" name="password" required className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-primary" />
-          </div>
-          <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-            Entrar
-          </button>
-        </form>
-        <p className="text-sm text-center text-muted-foreground">
-          ¿No tienes cuenta?{" "}
-          <a href="/register" className="font-medium text-primary hover:underline">
-            Regístrate
-          </a>
-        </p>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Iniciar sesión</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+            <div className="space-y-2">
+              <Label htmlFor="email">Correo electrónico</Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                disabled={isSubmitting}
+                {...register("email")}
+              />
+              {errors.email && (
+                <p className="text-sm text-destructive">{errors.email.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Contraseña</Label>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                disabled={isSubmitting}
+                {...register("password")}
+              />
+              {errors.password && (
+                <p className="text-sm text-destructive">{errors.password.message}</p>
+              )}
+            </div>
+
+            {serverError && (
+              <p className="text-sm text-destructive" role="alert">
+                {serverError}
+              </p>
+            )}
+
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Entrando..." : "Entrar"}
+            </Button>
+          </form>
+
+          <p className="mt-4 text-sm text-center text-muted-foreground">
+            ¿No tienes cuenta?{" "}
+            <a href="/register" className="font-medium text-primary hover:underline">
+              Regístrate
+            </a>
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
