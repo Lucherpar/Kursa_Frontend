@@ -1,5 +1,6 @@
 import { useAuth } from "../store/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getApiList } from "../lib/utils";
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
@@ -11,7 +12,8 @@ export default function DashboardPage() {
       const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:4000/api"}/courses`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
       });
-      return res.json();
+      const payload = await res.json();
+      return getApiList<any>(payload);
     },
   });
 
