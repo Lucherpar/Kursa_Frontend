@@ -49,6 +49,7 @@ QueryClientProvider → AuthProvider → SocketProvider → BrowserRouter → Ro
 | :--- | :--- |
 | `Sidebar` | Barra lateral. |
 | `Navbar` | Barra superior. |
+| `AppLayout` | Shell autenticado: sidebar + navbar + contenido. |
 | `ProtectedRoute` | Envoltorio para rutas protegidas. |
 
 ### `src/components/content/`

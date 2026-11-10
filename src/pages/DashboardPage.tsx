@@ -1,11 +1,7 @@
-import { useAuth } from "../store/AuthContext";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { getApiList } from "../lib/utils";
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
-  const queryClient = useQueryClient();
-
   const { data: courses = [], isLoading } = useQuery({
     queryKey: ["courses"],
     queryFn: async () => {
@@ -17,33 +13,50 @@ export default function DashboardPage() {
     },
   });
 
-  const handleLogout = () => {
-    logout();
-    queryClient.clear();
-  };
+  if (isLoading) {
+    return (
+      <div className="text-zinc-300 flex items-center justify-center font-mono text-sm py-12">
+        <span>cargando...</span>
+      </div>
+    );
+  }
 
-  if (isLoading) return <div className="p-8">Cargando...</div>;
+  const courseList = Array.isArray(courses) ? courses : [];
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">{user?.email}</span>
-          <button onClick={handleLogout} className="text-sm text-destructive hover:underline">
-            Cerrar sesión
-          </button>
+    <div className="text-zinc-100 font-sans space-y-4">
+      <div className="flex items-center justify-between px-1">
+        <h2 className="text-sm font-mono uppercase tracking-wider text-zinc-400">cursos disponibles</h2>
+        <span className="text-xs font-mono text-zinc-600">{courseList.length} total</span>
+      </div>
+
+      {courseList.length === 0 ? (
+        <div className="border border-zinc-800/60 rounded-xl p-8 text-center bg-[#1a1a1e]/40">
+          <p className="text-sm text-zinc-500 font-mono">no hay cursos por aquí todavía</p>
         </div>
-      </div>
-      <h2 className="text-lg font-semibold">Cursos disponibles</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {courses.map((course: any) => (
-          <div key={course.id} className="border border-border rounded-xl p-4 bg-card">
-            <h3 className="font-semibold">{course.title}</h3>
-            <p className="text-sm text-muted-foreground">{course.description || "Sin descripción"}</p>
-          </div>
-        ))}
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {courseList.map((course: any) => (
+            <div
+              key={course.id}
+              className="bg-[#1a1a1e] border border-zinc-800/60 hover:border-zinc-700/80 rounded-xl p-5 transition-all flex flex-col justify-between gap-4"
+            >
+              <div className="space-y-1.5">
+                <h3 className="font-medium text-zinc-200 text-base">{course.title}</h3>
+                <p className="text-sm text-zinc-400 leading-relaxed">
+                  {course.description || "sin descripción"}
+                </p>
+              </div>
+              <div className="pt-3 border-t border-zinc-800/40 flex justify-between items-center text-xs font-mono text-zinc-500">
+                <span>activo</span>
+                <span className="text-zinc-300 hover:text-white cursor-pointer transition-colors">
+                  entrar &rarr;
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
